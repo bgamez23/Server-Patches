@@ -1,7 +1,3 @@
-Subject: [PATCH] == Pvp map system ==
-
-*Implementation of Pvp map thru source list only.
----
  src/map/mob.c | 13 +++++++++++++
  1 file changed, 13 insertions(+)
 
@@ -13,6 +9,7 @@ index 7223e98..6fc8ebc 100644
  		}
  		md->spawn_timer = INVALID_TIMER;
  		mob->spawn(md);
++		//Pvp enabled [Cookies]
 +		if( md->state.boss ) {
 +		map->list[bl->m].flag.pvp = 1;
 +		}
@@ -23,6 +20,7 @@ index 7223e98..6fc8ebc 100644
  		md->bl.m = md->spawn->m;
  		md->bl.x = md->spawn->x;
  		md->bl.y = md->spawn->y;
++		//Pvp enabled [Cookies]
 +		if(md->spawn->state.boss){
 +			map->list[md->bl.m].flag.pvp = 1;
 +		}  
@@ -32,7 +30,7 @@ index 7223e98..6fc8ebc 100644
 @@ -2951,6 +2959,11 @@ static int mob_dead(struct mob_data *md, struct block_list *src, int type)
  	if (battle_config.mvp_tomb_enabled && md->spawn->state.boss == BTYPE_MVP && map->list[md->bl.m].flag.notomb != 1)
  		mob->mvptomb_create(md, mvp_sd ? mvp_sd->status.name : NULL, time(NULL));
- 
++	//Pvp enabled [Cookies]
 +	if(md->spawn->state.boss)  {
 +	map->list[md->bl.m].flag.pvp = 0;
 +	}
