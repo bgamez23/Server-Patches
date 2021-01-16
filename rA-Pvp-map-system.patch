@@ -1,0 +1,43 @@
+ src/map/mob.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/src/map/mob.cpp b/src/map/mob.cpp
+index b0975bd4a..99dda8cde 100644
+--- a/src/map/mob.cpp
++++ b/src/map/mob.cpp
+@@ -1058,6 +1058,9 @@ TIMER_FUNC(mob_delayspawn){
+ 		}
+ 		md->spawn_timer = INVALID_TIMER;
+ 		mob_spawn(md);
++		if( md->state.boss ) {
++		map_setmapflag(bl->m, MF_PVP, true);
++		map_setmapflag(bl->m, MF_NOWARP, true);
++		}
+ 	}
+ 	return 0;
+ }
+@@ -1139,6 +1142,7 @@ int mob_spawn (struct mob_data *md)
+ 		md->bl.m = md->spawn->m;
+ 		md->bl.x = md->spawn->x;
+ 		md->bl.y = md->spawn->y;
++		if(md->spawn->state.boss){  
++		map_setmapflag(md->bl.m, MF_PVP, true);
++		map_setmapflag(md->bl.m, MF_NOWARP, true);
++		}
+ 		if( (md->bl.x == 0 && md->bl.y == 0) || md->spawn->xs || md->spawn->ys )
+ 		{	//Monster can be spawned on an area.
+@@ -3159,6 +3163,10 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
+ 	if (battle_config.mvp_tomb_enabled && md->spawn->state.boss && map_getmapflag(md->bl.m, MF_NOTOMB) != 1)
+ 		mvptomb_create(md, mvp_sd ? mvp_sd->status.name : NULL, time(NULL));
+ 
++	if(md->spawn->state.boss)  {
++	map_setmapflag(md->bl.m, MF_PVP, false);
++	map_setmapflag(md->bl.m, MF_NOWARP, false);
++	}
++
+ 	if( !rebirth )
+ 		mob_setdelayspawn(md); //Set respawning.
+ 	return 3; //Remove from map.
+-- 
+2.27.0.windows.1
+
