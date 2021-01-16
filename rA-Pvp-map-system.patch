@@ -13,6 +13,7 @@ index b0975bd4a..99dda8cde 100644
 +		if( md->state.boss ) {
 +		map_setmapflag(bl->m, MF_PVP, true);
 +		map_setmapflag(bl->m, MF_NOWARP, true);
++		map_setmapflag(bl->m, MF_NOWARPTO, true);
 +		}
  	}
  	return 0;
@@ -25,6 +26,7 @@ index b0975bd4a..99dda8cde 100644
 +		if(md->spawn->state.boss){  
 +		map_setmapflag(md->bl.m, MF_PVP, true);
 +		map_setmapflag(md->bl.m, MF_NOWARP, true);
++		map_setmapflag(md->bl.m, MF_NOWARPTO, true);
 +		}
  		if( (md->bl.x == 0 && md->bl.y == 0) || md->spawn->xs || md->spawn->ys )
  		{	//Monster can be spawned on an area.
@@ -36,6 +38,7 @@ index b0975bd4a..99dda8cde 100644
 +	if(md->spawn->state.boss)  {
 +	map_setmapflag(md->bl.m, MF_PVP, false);
 +	map_setmapflag(md->bl.m, MF_NOWARP, false);
++	map_setmapflag(md->bl.m, MF_NOWARPTO, false);
 +	}
 +
  	if( !rebirth )
