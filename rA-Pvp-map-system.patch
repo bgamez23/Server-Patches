@@ -38,6 +38,6 @@ index b0975bd4a..99dda8cde 100644
  	if( !rebirth )
  		mob_setdelayspawn(md); //Set respawning.
  	return 3; //Remove from map.
--- 
+
 2.27.0.windows.1
 
