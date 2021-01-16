@@ -124,7 +124,7 @@ index cab676cce..b7456cda7 100644
 +                    ,pl_sd->bl.x,pl_sd->bl.y
 +                    ,pl_sd->status.name);
 +            else
-+                snprintf(atcmd_output, CHAT_SIZE_MAX, "ID %d | Price %d | Amount %d | %s (%d,%d) %s",pl_sd->cart.u.items_cart[pl_sd->vending[j].index].nameid
++                snprintf(atcmd_output, CHAT_SIZE_MAX, "ID %d | Price %d | Amount %d | Map %s (%d,%d) | Seller %s",pl_sd->cart.u.items_cart[pl_sd->vending[j].index].nameid
 +                    ,pl_sd->vending[j].value
 +                    ,pl_sd->vending[j].amount
 +                    ,mapindex_id2name(pl_sd->mapindex)
