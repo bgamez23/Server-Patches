@@ -1,0 +1,34 @@
+diff --git a/src/char/char.cpp b/src/char/char.cpp
+index 4711a15ba..9ba2caf2a 100644
+--- a/src/char/char.cpp
++++ b/src/char/char.cpp
+@@ -1411,6 +1411,11 @@ int char_make_new_char( struct char_session_data* sd, char* name_, int str, int
+ 		return -4; // invalid slot
+ 	}
+ 
++	//GM Account Restriction 1 Slot only [Cookie]
++	if( slot != 0 && sd->group_id > 10 ){ // change 10 to minimum gm level
++		return -2; // character account limit exceeded
++	}
++
+ 	// Check gender
+ 	switch( sex ){
+ 		case SEX_FEMALE:
+diff --git a/src/char/char_clif.cpp b/src/char/char_clif.cpp
+index 0eb2fd61a..b5135e26b 100644
+--- a/src/char/char_clif.cpp
++++ b/src/char/char_clif.cpp
+@@ -816,6 +816,13 @@ int chclif_parse_charselect(int fd, struct char_session_data* sd,uint32 ipl){
+ 		int slot = RFIFOB(fd,2);
+ 		RFIFOSKIP(fd,3);
+ 
++		/*One character GM Account [Cookie]
++		*Character Select GM Account Restriction.
++		*/
++		if( slot != 0 && sd->group_id > 2 ){ 
++		chclif_reject(fd, 0); // rejected from server
++		}
++
+ 		ARR_FIND( 0, ARRAYLENGTH(map_server), server_id, session_isValid(map_server[server_id].fd) && !map_server[server_id].map.empty() );
+ 		// Map-server not available, tell the client to wait (client wont close, char select will respawn)
+ 		if (server_id == ARRAYLENGTH(map_server)) {
