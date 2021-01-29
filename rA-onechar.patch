@@ -31,4 +31,18 @@ index 0eb2fd61a..b5135e26b 100644
 +
  		ARR_FIND( 0, ARRAYLENGTH(map_server), server_id, session_isValid(map_server[server_id].fd) && !map_server[server_id].map.empty() );
  		// Map-server not available, tell the client to wait (client wont close, char select will respawn)
- 		if (server_id == ARRAYLENGTH(map_server)) {
+ 		if (server_id == ARRAYLENGTH(map_server)) 
+diff --git a/src/char/char.cpp b/src/char/char.cpp
+index 4711a15ba..75233ea0b 100644
+--- a/src/char/char.cpp
++++ b/src/char/char.cpp
+@@ -1454,6 +1454,8 @@ int char_make_new_char( struct char_session_data* sd, char* name_, int str, int
+ 	// check the number of already existing chars in this account
+ 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT 1 FROM `%s` WHERE `account_id` = '%d'", schema_config.char_db, sd->account_id) )
+ 		Sql_ShowDebug(sql_handle);
++	if( sd->group_id != 5 && sd->group_id > 0 && sd->group_id < 99 && Sql_NumRows(sql_handle) >= 1 ) //Thanks to [Haruka Mayumi]
++		return -2; // character account limit exceeded
+ #ifdef VIP_ENABLE
+ 	if( Sql_NumRows(sql_handle) >= MAX_CHARS )
+ 		return -2; // character account limit exceeded
+
