@@ -25,7 +25,7 @@ index 0eb2fd61a..b5135e26b 100644
 +		/*One character GM Account [Cookie]
 +		*Character Select GM Account Restriction.
 +		*/
-+		if( slot != 0 && sd->group_id > 2 ){ 
++		if( slot != 0 && sd->group_id > 10 ){ 
 +		chclif_reject(fd, 0); // rejected from server
 +		}
 +
