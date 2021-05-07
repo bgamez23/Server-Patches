@@ -1,0 +1,155 @@
+diff --git a/src/map/atcommand.cpp b/src/map/atcommand.cpp
+index cab676cce..99ae46c2d 100644
+--- a/src/map/atcommand.cpp
++++ b/src/map/atcommand.cpp
+@@ -624,6 +624,11 @@ ACMD_FUNC(mapmove)
+ 		return -1;
+ 	}
+ 
++	if (map_getmapflag(sd->bl.m, MF_PKAREA) && map_getmapflag(sd->bl.m, MF_PVP) ){ // PK MAPFLAG [cookie]
++		sd->state.pk_mode = 0;
++		clif_displaymessage(fd, "You entered on PK mode area.");
++	}
++
+ 	clif_displaymessage(fd, msg_txt(sd,0)); // Warped.
+ 	return 0;
+ }
+@@ -4335,6 +4340,8 @@ ACMD_FUNC(mapinfo) {
+ 		strcat(atcmd_output, " NoLockOn |");
+ 	if (map_getmapflag(m_id, MF_NOTOMB))
+ 		strcat(atcmd_output, " NoTomb |");
++	if (map_getmapflag(m_id, MF_PKAREA)) // [Cookie]
++		strcat(atcmd_output, " PKAREA |");
+ 	if (map_getmapflag(m_id, MF_NOCOSTUME))
+ 		strcat(atcmd_output, " NoCostume |");
+ 	clif_displaymessage(fd, atcmd_output);
+@@ -4477,6 +4484,31 @@ ACMD_FUNC(mount_peco)
+ 	return 0;
+ }
+ 
++/*===========================================
++*Revamp additional for pk area mapflag.
++*[Cookie]
++*------------------------------------------*/
++ACMD_FUNC(pk)
++{
++	nullpo_retr(-1, sd);
++
++	if (map_getmapflag(sd->bl.m, MF_PVP) || map_getmapflag(sd->bl.m, MF_GVG) || map_getmapflag(sd->bl.m, MF_GVG_CASTLE) || map_getmapflag(sd->bl.m, MF_GVG_DUNGEON) || map_getmapflag(sd->bl.m, MF_PKAREA)) {
++		clif_displaymessage(fd, "You can only change your PK state on non-PVP maps");
++		return -1;
++	}
++
++	if (!sd->state.pk_mode) {
++		sd->state.pk_mode = 1;
++		clif_displaymessage(fd, "You are now no longer in PK mode.");
++	}
++	else {
++		sd->state.pk_mode = 0;
++		clif_displaymessage(fd, "You are now on PK mode");
++	}
++
++	return 0;
++}
++
+ /*==========================================
+  *Spy Commands by Syrus22
+  *------------------------------------------*/
+@@ -10442,6 +10474,7 @@ void atcommand_basecommands(void) {
+ 		ACMD_DEF2("charban", char_ban),
+ 		ACMD_DEF2("charunban", char_unban),
+ 		ACMD_DEF2("mount", mount_peco),
++		ACMD_DEF2("pk",pk),
+ 		ACMD_DEF(guildspy),
+ 		ACMD_DEF(partyspy),
+ 		ACMD_DEF(clanspy),
+diff --git a/src/map/battle.cpp b/src/map/battle.cpp
+index 86221485e..227a1a23a 100644
+--- a/src/map/battle.cpp
++++ b/src/map/battle.cpp
+@@ -8222,6 +8222,8 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
+ 
+ 			if( ((sd->state.block_action & PCBLOCK_IMMUNE) || (sc->data[SC_KINGS_GRACE] && s_bl->type != BL_PC)) && flag&BCT_ENEMY )
+ 				return 0; // Global immunity only to Attacks
++			if (sd->state.pk_mode && flag&BCT_ENEMY && s_bl->type != BL_MOB && map_getmapflag(s_bl->m, MF_PVP))
++				return 0; // Immune to attack for pvp.
+ 			if( sd->status.karma && s_bl->type == BL_PC && ((TBL_PC*)s_bl)->status.karma )
+ 				state |= BCT_ENEMY; // Characters with bad karma may fight amongst them
+ 			if( sd->state.killable ) {
+@@ -8298,6 +8300,8 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
+ 					else
+ 						return 0; // You can't target anything out of your duel
+ 				}
++				else if (map_getmapflag(s_bl->m, MF_PVP) && sd->state.pk_mode && t_bl->type != BL_MOB)
++					return 0; // You can't target anything out of your duel
+ 			}
+ 			if( !sd->status.guild_id && t_bl->type == BL_MOB && ((TBL_MOB*)t_bl)->mob_id == MOBID_EMPERIUM && mapdata_flag_gvg(mapdata) )
+ 				return 0; //If you don't belong to a guild, can't target emperium.
+diff --git a/src/map/map.hpp b/src/map/map.hpp
+index 4fceab918..7f9256939 100644
+--- a/src/map/map.hpp
++++ b/src/map/map.hpp
+@@ -603,6 +603,7 @@ enum e_mapflag : int16 {
+ 	MF_PRIVATEAIRSHIP_SOURCE,
+ 	MF_PRIVATEAIRSHIP_DESTINATION,
+ 	MF_SKILL_DURATION,
++	MF_PKAREA, // [Cookie]
+ 	MF_MAX
+ };
+ 
+diff --git a/src/map/pc.cpp b/src/map/pc.cpp
+index 5253ca9b5..d42c305ff 100644
+--- a/src/map/pc.cpp
++++ b/src/map/pc.cpp
+@@ -6040,6 +6040,11 @@ enum e_setpos pc_setpos(struct map_session_data* sd, unsigned short mapindex, in
+ 		pc_setrestartvalue(sd,1);
+ 	}
+ 
++	if (map_getmapflag(sd->bl.m, MF_PKAREA) && map_getmapflag(sd->bl.m, MF_PVP) ){ // PK MAPFLAG [cookie]
++		sd->state.pk_mode = 0;
++		clif_displaymessage(sd->fd, "You entered on PK mode area.");
++	}
++
+ 	int16 m = map_mapindex2mapid(mapindex);
+ 	struct map_data *mapdata = map_getmapdata(m);
+ 	status_change *sc = status_get_sc(&sd->bl);
+diff --git a/src/map/pc.hpp b/src/map/pc.hpp
+index 4145e7e61..2faf7b804 100644
+--- a/src/map/pc.hpp
++++ b/src/map/pc.hpp
+@@ -321,6 +321,7 @@ struct map_session_data {
+ 		unsigned int gmaster_flag : 1;
+ 		unsigned int prevend : 1;//used to flag wheather you've spent 40sp to open the vending or not.
+ 		unsigned int warping : 1;//states whether you're in the middle of a warp processing
++		unsigned int pk_mode : 1; //[malufett]
+ 		unsigned int permanent_speed : 1; // When 1, speed cannot be changed through status_calc_pc().
+ 		bool hold_recalc;
+ 		unsigned int banking : 1; //1 when we using the banking system 0 when closed
+diff --git a/src/map/script.cpp b/src/map/script.cpp
+index 59062f093..55e2dd11f 100644
+--- a/src/map/script.cpp
++++ b/src/map/script.cpp
+@@ -5594,6 +5594,11 @@ BUILDIN_FUNC(warp)
+ 		return SCRIPT_CMD_FAILURE;
+ 	}
+ 
++	if (map_getmapflag(sd->bl.m, MF_PKAREA) && map_getmapflag(sd->bl.m, MF_PVP) ){ // PK MAPFLAG [cookie]
++		sd->state.pk_mode = 0;
++		clif_displaymessage(sd->fd, "You entered on PK mode area.");
++	}
++
+ 	return SCRIPT_CMD_SUCCESS;
+ }
+ /*==========================================
+diff --git a/src/map/script_constants.hpp b/src/map/script_constants.hpp
+index 884317495..bf17046e3 100644
+--- a/src/map/script_constants.hpp
++++ b/src/map/script_constants.hpp
+@@ -478,6 +478,7 @@
+ 	export_constant(MF_PRIVATEAIRSHIP_SOURCE);
+ 	export_constant(MF_PRIVATEAIRSHIP_DESTINATION);
+ 	export_constant(MF_SKILL_DURATION);
++	export_constant(MF_PKAREA);
+ 
+ 	/* setcell types */
+ 	export_constant(CELL_WALKABLE);
