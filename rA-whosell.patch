@@ -47,7 +47,7 @@ index 87ef88ff6..db793d144 100644
 +		std::shared_ptr<item_data> id = item_db.searchname( item_name );
 +
 +		if( id == nullptr ){
-+			clif_displaymessage(fd, msg_txt(sd,"No item found with this name"));
++			clif_displaymessage(fd, "No item found with this name");
 +			return -1;
 +		}
 +
