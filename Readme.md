@@ -1,9 +1,7 @@
 Simple sources patches.
 ==========
 
-
-My Patches for my sources.
-
+This is simple patches for ragnarok online emulation.
 
 If you have suggestions or clarification you can contact me on discord lego1010#5271
 
